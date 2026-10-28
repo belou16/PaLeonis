@@ -63,8 +63,6 @@ CREATE TABLE serveur (
     cree_le               TIMESTAMPTZ    NOT NULL DEFAULT now(),
     modifie_le            TIMESTAMPTZ    NOT NULL DEFAULT now()
 );
-CREATE INDEX idx_serveur_datacenter ON serveur (datacenter_id);
-CREATE INDEX idx_serveur_statut     ON serveur (statut);
 
 CREATE TABLE technicien (
     id            INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -73,7 +71,6 @@ CREATE TABLE technicien (
     prenom        VARCHAR(100) NOT NULL,
     mail_pro      VARCHAR(255) NOT NULL UNIQUE
 );
-CREATE INDEX idx_technicien_datacenter ON technicien (datacenter_id);
 
 CREATE TABLE abonnement (
     id            INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -89,9 +86,6 @@ CREATE TABLE abonnement (
     CONSTRAINT abonnement_dates_chk CHECK (date_fin IS NULL OR date_fin >= date_debut),
     CONSTRAINT abonnement_resilie_chk CHECK (statut <> 'RESILIE' OR date_fin IS NOT NULL)
 );
-CREATE INDEX idx_abonnement_client ON abonnement (client_id);
-CREATE INDEX idx_abonnement_offre  ON abonnement (offre_id);
-CREATE INDEX idx_abonnement_statut ON abonnement (statut);
 
 CREATE TABLE ticket (
     id             INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -106,10 +100,6 @@ CREATE TABLE ticket (
     cree_le        TIMESTAMPTZ     NOT NULL DEFAULT now(),
     modifie_le     TIMESTAMPTZ     NOT NULL DEFAULT now()
 );
-CREATE INDEX idx_ticket_client     ON ticket (client_id);
-CREATE INDEX idx_ticket_technicien ON ticket (technicien_id);
-CREATE INDEX idx_ticket_serveur    ON ticket (serveur_id);
-CREATE INDEX idx_ticket_statut     ON ticket (statut, priorite);
 
 CREATE OR REPLACE FUNCTION set_modifie_le() RETURNS TRIGGER AS $$
 BEGIN
