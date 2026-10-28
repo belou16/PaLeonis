@@ -19,6 +19,33 @@ class Client {
     return rows[0] ?? null;
   }
 
+  static async findFiche(id) {
+    const client = await Client.findById(id);
+    if (!client) return null;
+
+    const { rows } = await pool.query(
+      `SELECT a.id, a.statut, a.date_debut, a.date_fin,
+              a.prix_applique::float AS prix_applique,
+              json_build_object(
+                'id', o.id, 'nom', o.nom, 'categorie', o.categorie
+              ) AS offre,
+              CASE WHEN s.id IS NULL THEN NULL ELSE json_build_object(
+                'id', s.id, 'nom_hote', s.nom_hote, 'adresse_ip', s.adresse_ip,
+                'statut', s.statut,
+                'datacenter', json_build_object('id', d.id, 'nom', d.nom, 'ville', d.ville)
+              ) END AS serveur
+       FROM abonnement a
+       JOIN offre o           ON o.id = a.offre_id
+       LEFT JOIN serveur s    ON s.id = a.serveur_id
+       LEFT JOIN datacenter d ON d.id = s.datacenter_id
+       WHERE a.client_id = $1
+       ORDER BY a.date_debut DESC, a.id DESC`,
+      [id],
+    );
+
+    return { ...client, abonnements: rows };
+  }
+
   static async createOne({ type, email, tel, nom, siret, raison_sociale }) {
     const db = await pool.connect();
     try {

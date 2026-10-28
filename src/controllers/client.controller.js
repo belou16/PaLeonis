@@ -27,6 +27,22 @@ const getClient = async (req, res) => {
   }
 };
 
+const getFicheClient = async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) {
+    return res.status(400).json({ error: "Identifiant invalide." });
+  }
+  try {
+    const fiche = await Client.findFiche(id);
+    if (!fiche) {
+      return res.status(404).json({ error: "Client introuvable." });
+    }
+    return res.status(200).json(fiche);
+  } catch (error) {
+    return res.status(500).json({ error: "Erreur interne du serveur." });
+  }
+};
+
 const createClient = async (req, res) => {
   const { type, email, nom, siret, raison_sociale } = req.body ?? {};
 
@@ -63,4 +79,4 @@ const createClient = async (req, res) => {
   }
 };
 
-module.exports = { listClients, getClient, createClient };
+module.exports = { listClients, getClient, createClient, getFicheClient };
