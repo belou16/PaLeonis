@@ -1,10 +1,9 @@
 const express = require("express");
-const { } = require("../controllers/technicien.controller");
+const { listTechniciens, getTechnicien } = require("../controllers/technicien.controller");
 
 const router = express.Router();
 
-router.get("/technicien/:id/tickets", ...); // Get tickets for a specific technician
-router.get("/technicien/:id", ...); // Read specific technician
-router.get("/technicien", ...); // list all technicians
- 
+router.get("/techniciens/:id", getTechnicien); // Read specific technician
+router.get("/techniciens", listTechniciens); // list all technicians
+
 module.exports = router;
