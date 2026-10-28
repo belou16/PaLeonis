@@ -161,6 +161,11 @@ class Ticket {
     return Ticket.#fromRow(rows[0]);
   }
 
+  static async deleteOne(id) {
+    const { rowCount } = await pool.query("DELETE FROM ticket WHERE id = $1", [id]);
+    return rowCount > 0;
+  }
+
   static async technicienExists(technicienId) {
     const { rows } = await pool.query("SELECT 1 FROM technicien WHERE id = $1", [technicienId]);
     return rows.length > 0;
