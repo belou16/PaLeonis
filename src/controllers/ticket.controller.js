@@ -1,4 +1,5 @@
 const Ticket = require("../models/ticket.model");
+const Message = require("../models/message.model");
 
 const createTicket = async (req, res) => {
   const { clientId, serveurId, sujet, description, priorite } = req.body ?? {};
@@ -14,10 +15,40 @@ const createTicket = async (req, res) => {
   }
 };
 
+// Le ticket (PostgreSQL) et tout son fil de messages (MongoDB) en une seule réponse.
 const getTicket = async (req, res) => {
   const ticket = await Ticket.findById(req.params.id);
   if (!ticket) return res.status(404).json({ error: "Ticket introuvable." });
-  res.status(200).json(ticket);
+  res.status(200).json({ ...ticket.toJSON(), messages: await Message.filDuTicket(ticket.id) });
+};
+
+const addMessage = async (req, res) => {
+  const ticket = await Ticket.findById(req.params.id);
+  if (!ticket) return res.status(404).json({ error: "Ticket introuvable." });
+  if (ticket.statut === "FERME") {
+    return res.status(409).json({ error: "Ticket fermé : il n'accepte plus de messages." });
+  }
+  const { auteur, contenu, piecesJointes } = req.body ?? {};
+  if (!auteur || !["CLIENT", "TECHNICIEN"].includes(auteur.type) || !Number.isInteger(auteur.id)) {
+    return res.status(422).json({ error: "auteur doit valoir { type: CLIENT | TECHNICIEN, id: entier }." });
+  }
+  if (auteur.type === "CLIENT" && auteur.id !== ticket.clientId) {
+    return res.status(403).json({ error: "Seul le client du ticket peut y écrire." });
+  }
+  if (auteur.type === "TECHNICIEN" && !(await Ticket.technicienExists(auteur.id))) {
+    return res.status(404).json({ error: "Technicien introuvable." });
+  }
+  const message = await Message.create({ ticketId: ticket.id, auteur, contenu, piecesJointes });
+  res.status(201).json(message);
+};
+
+// Suppression en cascade applicative : PostgreSQL d'abord, puis le fil MongoDB.
+const deleteTicket = async (req, res) => {
+  if (!(await Ticket.deleteOne(req.params.id))) {
+    return res.status(404).json({ error: "Ticket introuvable." });
+  }
+  await Message.deleteMany({ ticketId: Number(req.params.id) });
+  res.status(204).end();
 };
 
 const assignTicket = async (req, res) => {
@@ -50,4 +81,12 @@ const listTicketsTechnicien = async (req, res) => {
   res.status(200).json(await Ticket.findOpenByTechnicien(req.params.id));
 };
 
-module.exports = { createTicket, getTicket, assignTicket, updateTicketStatut, listTicketsTechnicien };
+module.exports = {
+  createTicket,
+  getTicket,
+  addMessage,
+  deleteTicket,
+  assignTicket,
+  updateTicketStatut,
+  listTicketsTechnicien,
+};
