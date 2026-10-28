@@ -111,6 +111,14 @@ class Catalogue {
     return rows[0] ? Catalogue.#fromRow(rows[0]) : null;
   }
 
+  static async findByIds(ids) {
+    const { rows } = await pool.query(
+      "SELECT * FROM offre WHERE id = ANY($1::int[]) ORDER BY id",
+      [ids],
+    );
+    return rows.map(Catalogue.#fromRow);
+  }
+
   static async createOne(dto) {
     const data = dto ?? {};
     Catalogue.#validate(data, false);
@@ -143,6 +151,18 @@ class Catalogue {
       ],
     );
     return rows[0] ? Catalogue.#fromRow(rows[0]) : null;
+  }
+
+  static async deleteOne(id) {
+    try {
+      const { rowCount } = await pool.query("DELETE FROM offre WHERE id = $1", [id]);
+      return rowCount > 0;
+    } catch (error) {
+      if (error.code === "23503") {
+        throw httpError(409, "Offre encore utilisée par des abonnements.");
+      }
+      throw error;
+    }
   }
 
   static async retirer(id) {
