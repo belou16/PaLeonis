@@ -18,7 +18,7 @@ class Ticket {
     FERME: [],
   };
 
-  constructor(id, clientId, technicienId, serveurId, sujet, description, dateOuverture, priorite, statut) {
+  constructor({ id, clientId, technicienId, serveurId, sujet, description, dateOuverture, priorite, statut }) {
     this.#id = id;
     this.#clientId = clientId;
     this.#technicienId = technicienId;
@@ -117,17 +117,17 @@ class Ticket {
   }
 
   static #fromRow(row) {
-    return new Ticket(
-      row.id,
-      row.client_id,
-      row.technicien_id,
-      row.serveur_id,
-      row.sujet,
-      row.description,
-      row.date_ouverture,
-      row.priorite,
-      row.statut
-    );
+    return new Ticket({
+      id: row.id,
+      clientId: row.client_id,
+      technicienId: row.technicien_id,
+      serveurId: row.serveur_id,
+      sujet: row.sujet,
+      description: row.description,
+      dateOuverture: row.date_ouverture,
+      priorite: row.priorite,
+      statut: row.statut,
+    });
   }
 
   static async create(clientId, serveurId, sujet, description, priorite) {
