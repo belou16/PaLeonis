@@ -8,6 +8,7 @@ const dashboardRoutes = require("./routes/dashboard.routes");
 const technicienRoutes = require("./routes/technicien.routes");
 const clientRoutes = require("./routes/client.route");
 const pool = require("./db");
+const connectMongo = require("./config/mongo");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -37,10 +38,32 @@ app.use((error, req, res, next) => {
   if (error.code === "22P02") {
     return res.status(400).json({ error: "Donnée invalide." });
   }
+  if (error.name === "ValidationError") {
+    const details = Object.values(error.errors).map((e) => e.message);
+    return res.status(422).json({ error: "Document invalide.", details });
+  }
+  if (error.name === "CastError") {
+    return res.status(400).json({ error: `Valeur invalide pour ${error.path}.` });
+  }
+  if (error.code === 11000) {
+    return res.status(409).json({ error: "Ce document existe déjà." });
+  }
   console.error(error);
   res.status(500).json({ error: "Erreur interne du serveur." });
 });
 
-app.listen(PORT, () => {
-  console.log(`Serveur PaLeonis démarré sur http://localhost:${PORT}`);
-});
+const start = async () => {
+  try {
+    await pool.query("SELECT 1");
+    console.log("Connecté à PostgreSQL");
+    await connectMongo();
+  } catch (error) {
+    console.error("Connexion impossible :", error.message);
+    process.exit(1);
+  }
+  app.listen(PORT, () => {
+    console.log(`Serveur PaLeonis démarré sur http://localhost:${PORT}`);
+  });
+};
+
+start();
