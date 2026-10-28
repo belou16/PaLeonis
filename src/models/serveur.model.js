@@ -116,6 +116,11 @@ class Serveur {
     const { rows } = await pool.query(`${Serveur.#SELECT} WHERE s.id = $1`, [id]);
     return rows[0] ? Serveur.#fromRow(rows[0]) : null;
   }
+
+  static async deleteOne(id) {
+    const { rowCount } = await pool.query("DELETE FROM serveur WHERE id = $1", [id]);
+    return rowCount > 0;
+  }
 }
 
 module.exports = Serveur;
