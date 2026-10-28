@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const productRoutes = require("./routes/product.routes");
+const ticketRoutes = require("./routes/ticket.routes");
 const pool = require("./db");
 
 const app = express();
@@ -9,6 +10,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 
 app.use("/api/products", productRoutes);
+app.use("/api", ticketRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: "Route introuvable." });
