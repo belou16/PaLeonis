@@ -8,11 +8,11 @@ const {
 
 const router = express.Router();
 
-router.get("/abonnements", listAbonnements); // Get all offers
-router.get("/abonnements/:id", getAbonnement); // Get a specific offer by ID
+router.get("/abonnements", listAbonnements); // List subscriptions
+router.get("/abonnements/:id", getAbonnement); // Get a specific subscription by ID
 
-router.post("/abonnements", createAbonnement); // Create a new offer
+router.post("/abonnements", createAbonnement); // Subscribe and assign a free server
 
-router.patch("/abonnements/:id/resiliation", resilierAbonnement);
+router.patch("/abonnements/:id/resiliation", resilierAbonnement); // Cancel and free the server
 
 module.exports = router;
