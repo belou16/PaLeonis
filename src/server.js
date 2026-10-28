@@ -4,9 +4,10 @@ const ticketRoutes = require("./routes/ticket.routes");
 const serveurRoutes = require("./routes/serveur.routes");
 const abonnementRoutes = require("./routes/abonnement.routes");
 const catalogueRoutes = require("./routes/catalogue.routes");
-const clientRoutes = require("./routes/client.route");
 const dashboardRoutes = require("./routes/dashboard.routes");
 const technicienRoutes = require("./routes/technicien.routes");
+const clientRoutes = require("./routes/client.route");
+const pool = require("./db");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
