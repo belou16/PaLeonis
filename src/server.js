@@ -4,6 +4,7 @@ const ticketRoutes = require("./routes/ticket.routes");
 const serveurRoutes = require("./routes/serveur.routes");
 const pool = require("./db");
 const connectMongo = require("./config/mongo");
+const errorHandler = require("./middlewares/errorHandler");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,6 +17,8 @@ app.use("/api", serveurRoutes);
 app.use((req, res) => {
   res.status(404).json({ error: "Route introuvable." });
 });
+
+app.use(errorHandler);
 
 async function start() {
   try {
