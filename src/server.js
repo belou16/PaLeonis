@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const ticketRoutes = require("./routes/ticket.routes");
 const serveurRoutes = require("./routes/serveur.routes");
+const catalogueRoutes = require("./routes/catalogue.routes");
 const pool = require("./db");
 const connectMongo = require("./config/mongo");
 const errorHandler = require("./middlewares/errorHandler");
@@ -13,6 +14,7 @@ app.use(express.json());
 
 app.use("/api", ticketRoutes);
 app.use("/api", serveurRoutes);
+app.use("/api", catalogueRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: "Route introuvable." });

@@ -1,57 +1,46 @@
 const Catalogue = require("../models/catalogue.model");
 
-const listCatalogues = (req, res) => {
-  try {
-    const catalogues = Catalogue.findAll();
-    return res.status(200).json(catalogues);
-  } catch (error) {
-    return res.status(500).json({ error: "Erreur interne du serveur." });
+const validerOffre = ({ nom, categorie, prixMensuelHt, enVente }) => {
+  if (typeof nom !== "string" || nom.trim() === "") return "nom est obligatoire.";
+  if (!Catalogue.CATEGORIES.includes(categorie)) {
+    return `categorie doit valoir ${Catalogue.CATEGORIES.join(", ")}.`;
   }
+  if (typeof prixMensuelHt !== "number" || prixMensuelHt < 0) {
+    return "prixMensuelHt doit être un nombre positif.";
+  }
+  if (enVente !== undefined && typeof enVente !== "boolean") return "enVente doit être un booléen.";
+  return null;
 };
 
-const getCatalogue = (req, res) => {
-  try {
-    const catalogue = Catalogue.findById(req.params.id);
-    if (!catalogue) {
-      return res.status(404).json({ error: "Catalogue introuvable." });
-    }
-    return res.status(200).json(catalogue);
-  } catch (error) {
-    return res.status(500).json({ error: "Erreur interne du serveur." });
-  }
+const listCatalogues = async (req, res) => {
+  const { categorie, enVente } = req.query;
+  res.status(200).json(await Catalogue.findAll(categorie, enVente));
 };
 
-const createCatalogue = (req, res) => {
-  try {
-    const catalogue = Catalogue.createOne(req.body);
-    return res.status(201).json(catalogue);
-  } catch (error) {
-    return res.status(400).json({ error: error.message });
-  }
+const getCatalogue = async (req, res) => {
+  const offre = await Catalogue.findById(req.params.id);
+  if (!offre) return res.status(404).json({ error: "Offre introuvable." });
+  res.status(200).json(offre);
 };
 
-const updateCatalogue = (req, res) => {
-  try {
-    const updatedCatalogue = Catalogue.updateOne(req.params.id, req.body);
-    if (!updatedCatalogue) {
-      return res.status(404).json({ error: "Catalogue introuvable." });
-    }
-    return res.status(200).json(updatedCatalogue);
-  } catch (error) {
-    return res.status(400).json({ error: error.message });
-  }
+const createCatalogue = async (req, res) => {
+  const erreur = validerOffre(req.body ?? {});
+  if (erreur) return res.status(400).json({ error: erreur });
+  res.status(201).json(await Catalogue.create(req.body));
 };
 
-const deleteCatalogue = (req, res) => {
-  try {
-    const deletedCatalogue = Catalogue.deleteOne(req.params.id);
-    if (!deletedCatalogue) {
-      return res.status(404).json({ error: "Catalogue introuvable." });
-    }
-    return res.status(200).json({ message: "Catalogue supprimé avec succès." });
-  } catch (error) {
-    return res.status(500).json({ error: "Erreur interne du serveur." });
-  }
+const updateCatalogue = async (req, res) => {
+  const erreur = validerOffre(req.body ?? {});
+  if (erreur) return res.status(400).json({ error: erreur });
+  const offre = await Catalogue.update(req.params.id, req.body);
+  if (!offre) return res.status(404).json({ error: "Offre introuvable." });
+  res.status(200).json(offre);
+};
+
+const retirerCatalogue = async (req, res) => {
+  const offre = await Catalogue.retirer(req.params.id);
+  if (!offre) return res.status(404).json({ error: "Offre introuvable." });
+  res.status(200).json(offre);
 };
 
 module.exports = {
@@ -59,5 +48,5 @@ module.exports = {
   getCatalogue,
   createCatalogue,
   updateCatalogue,
-  deleteCatalogue,
+  retirerCatalogue,
 };

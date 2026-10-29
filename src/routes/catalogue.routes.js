@@ -4,17 +4,15 @@ const {
   getCatalogue,
   createCatalogue,
   updateCatalogue,
-  deleteCatalogue,
+  retirerCatalogue,
 } = require("../controllers/catalogue.controller");
 
 const router = express.Router();
 
-router.get("/offres", listCatalogues); // Get all offers
-router.get("/offres/:id", getCatalogue); // Get a specific offer by ID
-
-router.post("/offres", createCatalogue); // Create a new offer
-router.put("/offres/:id", updateCatalogue); // Update an existing offer by ID
-
-router.patch("/offres/:id/resiliation", deleteCatalogue); // Delete an offer by ID
+router.get("/offres", listCatalogues);
+router.get("/offres/:id", getCatalogue);
+router.post("/offres", createCatalogue);
+router.put("/offres/:id", updateCatalogue);
+router.patch("/offres/:id/retrait", retirerCatalogue);
 
 module.exports = router;
