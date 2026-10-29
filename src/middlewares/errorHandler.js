@@ -3,6 +3,9 @@ const errorHandler = (error, req, res, next) => {
   if (error.type === "entity.parse.failed") {
     return res.status(400).json({ error: "Corps JSON invalide." });
   }
+  if (error.status) {
+    return res.status(error.status).json({ error: error.message });
+  }
   if (error.name === "ValidationError") {
     const details = Object.fromEntries(
       Object.entries(error.errors).map(([champ, e]) => [champ, e.message])
