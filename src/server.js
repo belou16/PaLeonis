@@ -11,6 +11,8 @@ const clientRoutes = require("./routes/client.route");
 const datacenterRoutes = require("./routes/datacenter.routes");
 
 const pool = require("./db");
+const connectMongo = require("./config/mongo");
+const errorHandler = require("./middlewares/errorHandler");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -30,21 +32,21 @@ app.use((req, res) => {
   res.status(404).json({ error: "Route introuvable." });
 });
 
+app.use(errorHandler);
 
-app.use((error, req, res, next) => {
-  if (error.type === "entity.parse.failed") {
-    return res.status(400).json({ error: "JSON invalide." });
+async function start() {
+  try {
+    await pool.query("SELECT 1");
+    console.log("Connecté à PostgreSQL");
+    await connectMongo();
+  } catch (error) {
+    console.error("Connexion à une base impossible :", error.message);
+    process.exit(1);
   }
-  if (error.status) {
-    return res.status(error.status).json({ error: error.message });
-  }
-  if (error.code === "22P02") {
-    return res.status(400).json({ error: "Donnée invalide." });
-  }
-  console.error(error);
-  res.status(500).json({ error: "Erreur interne du serveur." });
-});
 
-app.listen(PORT, () => {
-  console.log(`Serveur PaLeonis démarré sur http://localhost:${PORT}`);
-});
+  app.listen(PORT, () => {
+    console.log(`Serveur PaLeonis démarré sur http://localhost:${PORT}`);
+  });
+}
+
+start();
